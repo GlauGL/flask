@@ -1,0 +1,80 @@
+from flask import Flask,flash, render_template, request,redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_required,  login_user
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+
+
+app = Flask(__name__)
+
+app.app_context().push()
+    
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///app.db"
+app.config['SECRET_KEY'] = f'{secrets.token_urlsafe(16)}'
+db = SQLAlchemy(app)
+login_manager = LoginManager(app) 
+
+class Usuarios(db.Model,UserMixin):
+    __tablename__ = "Usuarios"
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(84),nullable=False)
+    email = db.Column(db.String(84),nullable=False, unique=True, index=True)
+    senha = db.Column(db.String(255),nullable=False)
+
+def __str__(self):
+    return self.email
+
+@login_manager.user_loader
+def current_user(user_id):
+  #ESSE MÉTODO RETORNARÁ O USUÁRIO ATUAL
+  return Usuarios.query.get(user_id)
+
+# db.create_all()
+
+@app.route("/", methods=['POST','GET'])
+def login():
+    if request.method == "POST":
+        email_digitado = request.form['email']
+        senha_digitada = request.form['senha']
+        usuario = Usuarios.query.filter_by(email=email_digitado).first()
+        
+        if not usuario:
+            flash("Usuario não localizado")
+            return redirect(url_for("cadastro"))
+        
+        elif not check_password_hash(usuario.senha, senha_digitada):
+            flash("Senha não localizada")
+            return redirect(url_for("login"))
+        else:
+            flash("logado com sucesso")
+            login_user(usuario)
+            return redirect(url_for("index"))
+
+    return render_template('login.html')
+# def index():
+#     usuarios = Usuarios.query.all()
+#     return render_template("index.html", usuarios=usuarios)
+
+@app.route("/gerencial")
+@login_required
+# def cadastro():
+def index():
+    usuarios = Usuarios.query.all()
+    return render_template("index.html", usuarios=usuarios)
+@app.route("/cadastro", methods=['GET','POST'])
+def cadastro():
+    if request.method == "POST":
+       nome = request.form['login']
+       email = request.form['email'] 
+       senha =generate_password_hash(request.form['senha'])
+       usuario = Usuarios()
+       usuario.nome = nome
+       usuario.email = email
+       usuario.senha = senha
+       db.session.add(usuario)
+       db.session.commit()
+    # return redirect(url_for("login"))
+    return render_template('cadastro.html')
+
+if __name__== "__main__":
+    app.run(debug=True)
