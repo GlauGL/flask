@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadatrp</title>
+</head>
+<body>
+    <form action="{{url_for('cadastro')}}" method="POST">
+        <label>LOGIN: </label><br><br>
+        <input type="text" name="login" placeholder="Digite seu nome: "><br><br>
+        <label>EMAIL: </label><br><br>
+        <input type='email' name="email" placeholder="Digite seu email"><br><br>
+        <label> SENHA: </label><br><br>
+        <input type="password" name="senha" placeholder="Digite sua senha"><br><br>
+        <br><br>
+        <input type='submit' value="CADASTRO">
+    </form>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <script>
+      var messages = {{ messages | safe }};
+      for (var i=0; i<messages.length; i++) {
+        alert(messages[i]);
+      }
+        </script>
+    {% endif %}
+    {% endwith %}
+</body>
+</html>
