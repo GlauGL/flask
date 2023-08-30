@@ -192,6 +192,34 @@ def nova_tarefa():
                             "prazo":tarefa.prazo_tarefa,
                             "prioridade":tarefa.prioridade
                 }}
+@app.route("/api/v1/novo_usuario", methods=['POST'])
+def novo_usuario():
+    if request.method == 'POST':
+        usuario = request.json['usuario']
+        senha = request.json['senha']
+        user = User.query.filter_by(nome=usuario).first()
+
+        if not user:
+            return {"mensagem":"Credenciais incorretas!"}
+        
+        elif not check_password_hash(user.senha, senha):
+            return {"mensagem":"Credenciais incorretas!"}
+
+        else:
+            usuario = User()
+            usuario.email = request.json['email']
+            usuario.nome = request.json['novo_usuario']
+            usuario.senha = generate_password_hash(request.json['nova_senha'])
+            db.session.add(usuario)
+            db.session.commit()
+            return {
+                "mensagem":"Usuario cadastrado com sucesso!", 
+                "usuario":{
+                            "email":user.email,
+                            "nome":user.nome,
+                            "senha":user.senha,
+                            "id":user.id,
+                }}
 
 
 if __name__ == "__main__":
